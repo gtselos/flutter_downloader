@@ -245,8 +245,9 @@ class FlutterDownloader {
   }
 
   /// Pauses a running download task with id [taskId].
-  ///
-  static Future<void> pause({required String taskId}) async {
+  /// returns bool for android indicating whether download was paused when was halted.
+  /// returns null for iOS
+  static Future<bool?> pause({required String taskId}) async {
     assert(_initialized, 'plugin flutter_downloader is not initialized');
 
     try {

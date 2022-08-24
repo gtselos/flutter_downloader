@@ -228,8 +228,15 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
         try {
             downloadFile(context, url, savedDir, filename, headers, isResume);
             cleanUp();
+            task = taskDao.loadTask(getId().toString());
             dbHelper = null;
             taskDao = null;
+            if (task.status == DownloadStatus.RUNNING) {
+                if (showNotification) {
+                    NotificationManagerCompat.from(context).cancel(primaryId);
+                }
+                return Result.retry();
+            }
             return Result.success();
         } catch (Exception e) {
             updateNotification(context, filename == null ? url : filename, DownloadStatus.FAILED, -1, null, true);
@@ -466,8 +473,6 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
                 log(isStopped() ? "Download canceled" : "Server replied HTTP code: " + responseCode);
             }
         } catch (IOException e) {
-            taskDao.updateTask(getId().toString(), DownloadStatus.FAILED, lastProgress);
-            updateNotification(context, filename == null ? fileURL : filename, DownloadStatus.FAILED, -1, null, true);
             e.printStackTrace();
         } finally {
             if (outputStream != null) {
@@ -563,7 +568,7 @@ public class DownloadWorker extends Worker implements MethodChannel.MethodCallHa
 
     private void cleanUp() {
         DownloadTask task = taskDao.loadTask(getId().toString());
-        if (task != null && task.status != DownloadStatus.COMPLETE && !task.resumable) {
+        if (task != null && task.status != DownloadStatus.COMPLETE && task.status != DownloadStatus.RUNNING && !task.resumable) {
             String filename = task.filename;
             if (filename == null) {
                 filename = task.url.substring(task.url.lastIndexOf("/") + 1, task.url.length());

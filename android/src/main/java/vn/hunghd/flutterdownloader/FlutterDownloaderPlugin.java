@@ -25,8 +25,11 @@ import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -115,7 +118,6 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
         WorkRequest request = new OneTimeWorkRequest.Builder(DownloadWorker.class)
                 .setConstraints(new Constraints.Builder()
                         .setRequiresStorageNotLow(requiresStorageNotLow)
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build())
                 .addTag(TAG)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
@@ -232,12 +234,24 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
 
     private void pause(MethodCall call, MethodChannel.Result result) {
         String taskId = call.argument("task_id");
-        // mark the current task is cancelled to process pause request
-        // the worker will depends on this flag to prepare data for resume request
-        taskDao.updateTask(taskId, true);
+        boolean pausedHangingDownload = false;
+        try {
+            ListenableFuture<WorkInfo> info = WorkManager.getInstance(context).getWorkInfoById(UUID.fromString(taskId));
+            if (info.get().getState() ==  WorkInfo.State.ENQUEUED) {
+                DownloadTask task = taskDao.loadTask(taskId);
+                taskDao.updateTask(taskId, DownloadStatus.PAUSED, task.progress);
+                pausedHangingDownload = true;
+            } else {
+                // if the worker is not enqueued (download halted), mark the current task is cancelled to process pause request
+                // the worker will depend on this flag to prepare data for resume request
+                taskDao.updateTask(taskId, true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // cancel running task, this method causes WorkManager.isStopped() turning true and the download loop will be stopped
         WorkManager.getInstance(context).cancelWorkById(UUID.fromString(taskId));
-        result.success(null);
+        result.success(pausedHangingDownload);
     }
 
     private void resume(MethodCall call, MethodChannel.Result result) {
