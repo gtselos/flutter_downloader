@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.Data;
-import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
@@ -234,15 +233,16 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
 
     private void pause(MethodCall call, MethodChannel.Result result) {
         String taskId = call.argument("task_id");
-        boolean pausedHangingDownload = false;
+        HashMap<String, Object> res = new HashMap<>();
+        boolean statusUpdateInCallback = true;
+        DownloadTask task = taskDao.loadTask(taskId);
+        taskDao.updateTask(taskId, DownloadStatus.PAUSED, task.progress);
         try {
             ListenableFuture<WorkInfo> info = WorkManager.getInstance(context).getWorkInfoById(UUID.fromString(taskId));
             if (info.get().getState() ==  WorkInfo.State.ENQUEUED) {
-                DownloadTask task = taskDao.loadTask(taskId);
-                taskDao.updateTask(taskId, DownloadStatus.PAUSED, task.progress);
-                pausedHangingDownload = true;
+                statusUpdateInCallback = false;
             } else {
-                // if the worker is not enqueued (download halted), mark the current task is cancelled to process pause request
+                // if the worker is not enqueued, mark the current task is cancelled to process pause request
                 // the worker will depend on this flag to prepare data for resume request
                 taskDao.updateTask(taskId, true);
             }
@@ -251,7 +251,8 @@ public class FlutterDownloaderPlugin implements MethodCallHandler, FlutterPlugin
         }
         // cancel running task, this method causes WorkManager.isStopped() turning true and the download loop will be stopped
         WorkManager.getInstance(context).cancelWorkById(UUID.fromString(taskId));
-        result.success(pausedHangingDownload);
+        res.put("statusUpdateInCallback", statusUpdateInCallback);
+        result.success(res);
     }
 
     private void resume(MethodCall call, MethodChannel.Result result) {

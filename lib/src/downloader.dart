@@ -245,13 +245,13 @@ class FlutterDownloader {
   }
 
   /// Pauses a running download task with id [taskId].
-  /// returns bool for android indicating whether download was paused when was halted.
-  /// returns null for iOS
-  static Future<bool?> pause({required String taskId}) async {
+  static Future<PauseResponse?> pause({required String taskId}) async {
     assert(_initialized, 'plugin flutter_downloader is not initialized');
 
     try {
-      return await _channel.invokeMethod('pause', {'task_id': taskId});
+      final result = await _channel.invokeMethod('pause', {'task_id': taskId});
+      return PauseResponse(
+          statusUpdateInCallback: result == null ? true : result['statusUpdateInCallback']);
     } on PlatformException catch (e) {
       _log(e.message);
     }

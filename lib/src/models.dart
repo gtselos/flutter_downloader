@@ -86,3 +86,9 @@ class DownloadTask {
   String toString() =>
       'DownloadTask(taskId: $taskId, status: $status, progress: $progress, url: $url, filename: $filename, savedDir: $savedDir, timeCreated: $timeCreated)';
 }
+
+class PauseResponse {
+  final bool statusUpdateInCallback;
+
+  PauseResponse({required this.statusUpdateInCallback});
+}
