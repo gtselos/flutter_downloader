@@ -40,9 +40,12 @@ class FlutterDownloader {
   /// To ignore SSL-related errors on Android, set [ignoreSsl] to true. This may
   /// be useful when connecting to a test server which is not using SSL, but
   /// should be never used in production.
+  /// [useAppSupportDirectory] is iOS only flag. If true, all fiels are downloaded in application
+  /// support directory
   static Future<void> initialize({
     bool debug = false,
     bool ignoreSsl = false,
+    bool useAppSupportDirectory = false,
   }) async {
     assert(
       !_initialized,
@@ -58,6 +61,7 @@ class FlutterDownloader {
       callback.toRawHandle(),
       if (debug) 1 else 0,
       if (ignoreSsl) 1 else 0,
+      if (useAppSupportDirectory) 1 else 0,
     ]);
 
     _initialized = true;

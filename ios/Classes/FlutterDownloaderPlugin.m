@@ -51,6 +51,7 @@
 static FlutterPluginRegistrantCallback registerPlugins = nil;
 static BOOL initialized = NO;
 static BOOL debug = YES;
+static BOOL useAppSupportDir = NO;
 static NSURLSession *_session = nil;
 static FlutterEngine *_headlessRunner = nil;
 static int64_t _callbackHandle = 0;
@@ -370,7 +371,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 }
 
 - (NSString*)absoluteSavedDirPath:(NSString*)savedDir {
-    return [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject] stringByAppendingPathComponent:savedDir];
+    return [[NSSearchPathForDirectoriesInDomains(useAppSupportDir ? NSApplicationSupportDirectory : NSDocumentDirectory, NSUserDomainMask, YES) firstObject] stringByAppendingPathComponent:savedDir];
 }
 
 - (NSString*)shortenSavedDirPath:(NSString*)absolutePath {
@@ -379,7 +380,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
     }
     
     if (absolutePath) {
-        NSString* documentDirPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        NSString* documentDirPath = [NSSearchPathForDirectoriesInDomains(useAppSupportDir ? NSApplicationSupportDirectory : NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
         if ([absolutePath isEqualToString:documentDirPath]) {
             return @"";
         }
@@ -592,6 +593,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 - (void)initializeMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSArray *arguments = call.arguments;
     debug = [arguments[1] boolValue];
+    useAppSupportDir = [arguments[3] boolValue];
     _dbManager.debug = debug;
     [self startBackgroundIsolate:[arguments[0] longLongValue]];
     result([NSNull null]);
