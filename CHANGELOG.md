@@ -1,3 +1,109 @@
+## 1.11.5
+- Republish Fixes for previous verison. 
+
+
+## 1.11.4
+
+- Fix for not working after upgrade to IOS 17 and Xcode 15 (#899) 
+- fix for Issue with Spaces and Parentheses in File Names (#904)
+
+
+## 1.11.3
+
+- Fix for file name not being saved (#894) 
+
+## 1.11.2
+
+- Security update for iOS (#887) 
+- Support file store in any iOS directory (#829)
+
+## 1.11.1
+
+- Don't crash when `FlutterDownloader.registerCallback()` wasn't called (#879)
+
+## 1.11.0
+
+- Convert `DownloadTaskStatus` into an `enum` (#835)
+
+## 1.10.7
+
+- Override `operator ==` and `hashCode` for `DownloadTask` (#875)
+
+## 1.10.6
+
+- Fix `delete()` not working when file isn't saved to public storage (#871)
+- Update CI workflows on GitHub Actions (#872)
+- Bump native Android dependencies and Gradle (#873)
+- Bump minimum Flutter version to 3.10 (#873)
+
+## 1.10.5
+
+- Make the project compile when the app not doesn't have dependency on Kotlin
+  (#869)
+
+## 1.10.4
+
+- Fix Android build failing because of JVM and Kotlin target source
+  compatibility (#862)
+- Set upper Dart version constraint to `<4.0.0` (#863)
+
+## 1.10.3
+
+- Fix Android build failing when using Android Gradle Plugin v8 (#857)
+
+## 1.10.2
+
+- Correctly read the error/success codes (#766)
+- Fix `allowCellular` error in iOS for `loadTasksWithRawQuery()` (#803)
+- Fix example app crashing (#805)
+- fix: apply tasks progress instead of computed progress on pause (#818)
+- Fix create application support directory if it doesn't already exist (#815)
+- Remove automatic call to `WidgetsFlutterBinding.ensureInitialized()` in
+  `FlutterDownloader.initialize()` (#816)
+- Fix send message by `int` on port (#817)
+
+## 1.10.1+2
+
+- Minor fix to `publish` GitHub Action (#801)
+
+## 1.10.1+1
+
+- Fix generation of link to release notes on GitHub Releases (#799)
+
+## 1.10.1
+
+- Fix crash when `allowCellular` is null on iOS (#774)
+
+## 1.10.0
+
+- Add `allowCellular` argument to `loadTasksWithRawQuery()` (#765)
+- Fix database of download tasks being created in a public directory on iOS
+  (#728)
+- Add `allowCellular` argument to `DownloadCallback` (#754)
+
+## 1.9.1
+
+- Fix last download progress being wrong on Android (#752)
+- Make HTTP timeout configurable on Android (#741)
+
+## 1.9.0
+
+- Migrate the Android part to Kotlin from Java (#719)
+- iOS: fix wrong progress and status after pausing download (#743)
+- Add missing comma in the README (#744)
+
+## 1.8.4
+
+- Fix `FlutterDownloader.open()` always returning false (#726)
+
+## 1.8.3+2
+
+- Populate `issue_tracker` field in pubspec (#717)
+
+## 1.8.3+1
+
+- Minor updates to README (#715)
+
 ## 1.8.3
 
 - Android: revert possibility to set custom notification title introduced in
@@ -35,7 +141,8 @@
 
 - Improve documentation
 
-- Make it possible to disable logging using `FlutterDownloader.initialize(debug: false)`
+- Make it possible to disable logging using `FlutterDownloader.initialize(debug:
+false)`
 
 ## 1.7.4
 
@@ -106,7 +213,8 @@
 
 ## 1.4.1
 
-- Android: fix bug `ensureInitializationComplete must be called after startInitialization`
+- Android: fix bug `ensureInitializationComplete must be called after
+startInitialization`
 - clarify integration documents
 
 ## 1.4.0
