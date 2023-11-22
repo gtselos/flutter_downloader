@@ -148,7 +148,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
                     null,
                     true
                 )
-                taskDao.updateTask(getId().toString(), DownloadStatus.CANCELED, lastProgress)
+                taskDao?.updateTask(id.toString(), DownloadStatus.CANCELED, lastProgress)
             }
             if (task.status === DownloadStatus.PAUSED) {
                 updateNotification(
@@ -228,7 +228,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) :
             taskDao = null
             if (task.status === DownloadStatus.RUNNING) {
                 if (showNotification) {
-                    NotificationManagerCompat.from(context).cancel(primaryId)
+                    NotificationManagerCompat.from(applicationContext).cancel(primaryId)
                 }
                 return Result.retry()
             }

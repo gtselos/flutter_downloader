@@ -252,26 +252,26 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
     }
 
     private fun pause(call: MethodCall, result: MethodChannel.Result) {
-        val taskId: String = call.argument("task_id")
-        val res: HashMap<String, Object> = HashMap()
+        val taskId: String = call.requireArgument("task_id")
+        val res: HashMap<String, Boolean> = HashMap()
         var statusUpdateInCallback = true
-        val task: DownloadTask = taskDao.loadTask(taskId)
-        taskDao.updateTask(taskId, DownloadStatus.PAUSED, task.progress)
+        val task = taskDao!!.loadTask(taskId)
+        taskDao!!.updateTask(taskId, DownloadStatus.PAUSED, task!!.progress)
         try {
             val info: ListenableFuture<WorkInfo> =
-                WorkManager.getInstance(context).getWorkInfoById(UUID.fromString(taskId))
+                WorkManager.getInstance(context!!).getWorkInfoById(UUID.fromString(taskId))
             if (info.get().getState() === WorkInfo.State.ENQUEUED) {
                 statusUpdateInCallback = false
             } else {
                 // if the worker is not enqueued, mark the current task is cancelled to process pause request
                 // the worker will depend on this flag to prepare data for resume request
-                taskDao.updateTask(taskId, true)
+                taskDao!!.updateTask(taskId, true)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
         // cancel running task, this method causes WorkManager.isStopped() turning true and the download loop will be stopped
-        WorkManager.getInstance(context).cancelWorkById(UUID.fromString(taskId))
+        WorkManager.getInstance(context!!).cancelWorkById(UUID.fromString(taskId))
         res.put("statusUpdateInCallback", statusUpdateInCallback)
         result.success(res)
     }
