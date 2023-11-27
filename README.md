@@ -19,6 +19,12 @@ manage download file location. It is still in triage and discussion in this
 very appreciated to have contribution and feedback from Flutter developer to get
 better design for the plugin._
 
+# Past Versions and SQL Injection Vulnerabilities
+
+In previous versions of this package, there were known vulnerabilities related to SQL injection. SQL injection is a type of security vulnerability that can allow malicious users to manipulate SQL queries executed by an application, potentially leading to unauthorized access or manipulation of the database.
+
+It is strongly recommended to upgrade to the latest version of this package to ensure that your application is not exposed to SQL injection vulnerabilities. The latest version contains the necessary security improvements and patches to mitigate such risks.
+
 ## iOS integration
 
 ### Required configuration:
@@ -277,7 +283,7 @@ void main() {
 
   // Plugin must be initialized before using
   await FlutterDownloader.initialize(
-    debug: true // optional: set to false to disable printing logs to console (default: true)
+    debug: true, // optional: set to false to disable printing logs to console (default: true)
     ignoreSsl: true // option: set to false to disable working with http links (default: false)
   );
 
@@ -320,7 +326,7 @@ void initState() {
   IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
   _port.listen((dynamic data) {
     String id = data[0];
-    DownloadTaskStatus status = data[1];
+    DownloadTaskStatus status = DownloadTaskStatus(data[1]);
     int progress = data[2];
     setState((){ });
   });
@@ -335,7 +341,7 @@ void dispose() {
 }
 
 @pragma('vm:entry-point')
-static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
+static void downloadCallback(String id, int status, int progress) {
   final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
   send.send([id, status, progress]);
 }
