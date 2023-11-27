@@ -255,23 +255,21 @@ class FlutterDownloaderPlugin : MethodChannel.MethodCallHandler, FlutterPlugin {
         val taskId: String = call.requireArgument("task_id")
         val res: HashMap<String, Boolean> = HashMap()
         var statusUpdateInCallback = true
-        val task = taskDao!!.loadTask(taskId)
-        taskDao!!.updateTask(taskId, DownloadStatus.PAUSED, task!!.progress)
         try {
             val info: ListenableFuture<WorkInfo> =
-                WorkManager.getInstance(context!!).getWorkInfoById(UUID.fromString(taskId))
-            if (info.get().getState() === WorkInfo.State.ENQUEUED) {
+                WorkManager.getInstance(requireContext()).getWorkInfoById(UUID.fromString(taskId))
+            // if task is already finished, the status is not updated in callback and we inform the caller
+            if (info.get().getState() === WorkInfo.State.ENQUEUED || info.get().getState() === WorkInfo.State.SUCCEEDED) {
                 statusUpdateInCallback = false
-            } else {
-                // if the worker is not enqueued, mark the current task is cancelled to process pause request
-                // the worker will depend on this flag to prepare data for resume request
-                taskDao!!.updateTask(taskId, true)
             }
+            // if task is not finished, we cancel it
+            if (info.get().getState() !== WorkInfo.State.SUCCEEDED) {
+                WorkManager.getInstance(requireContext()).cancelWorkById(UUID.fromString(taskId))
+            }
+            taskDao!!.updateTask(taskId, true)
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        // cancel running task, this method causes WorkManager.isStopped() turning true and the download loop will be stopped
-        WorkManager.getInstance(context!!).cancelWorkById(UUID.fromString(taskId))
         res.put("statusUpdateInCallback", statusUpdateInCallback)
         result.success(res)
     }
