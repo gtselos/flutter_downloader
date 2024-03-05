@@ -1,5 +1,5 @@
 #import "FlutterDownloaderPlugin.h"
-#import "DBManager.h"
+#import "FlutterDownloaderDBManager.h"
 
 #define STATUS_UNDEFINED 0
 #define STATUS_ENQUEUED 1
@@ -35,7 +35,7 @@
     FlutterMethodChannel *_mainChannel;
     FlutterMethodChannel *_callbackChannel;
     NSObject<FlutterPluginRegistrar> *_registrar;
-    DBManager *_dbManager;
+    FlutterDownloaderDBManager *_dbManager;
     NSString *_allFilesDownloadedMsg;
     NSMutableArray *_eventQueue;
 }
@@ -95,7 +95,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
         }
         databaseQueue = dispatch_queue_create("vn.hunghd.flutter_downloader", 0);
         
-        _dbManager = [[DBManager alloc] initWithDatabaseFilePath:dbPath];
+        _dbManager = [[FlutterDownloaderDBManager alloc] initWithDatabaseFilePath:dbPath];
         
         if (_runningTaskById == nil) {
             _runningTaskById = [[NSMutableDictionary alloc] init];
@@ -371,7 +371,7 @@ static NSMutableDictionary<NSString*, NSMutableDictionary*> *_runningTaskById = 
 
 - (NSString *)sanitizeFilename:(nullable NSString *)filename {
     // Define a list of allowed characters for filenames
-    NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.() "] invertedSet];
+    NSCharacterSet *allowedCharacters = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.() "];
 
     if (filename == nil || [filename isEqual:[NSNull null]] || [filename isEqualToString:@""]) {
            NSString *defaultFilename = @"default_filename";
